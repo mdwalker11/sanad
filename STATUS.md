@@ -30,9 +30,15 @@ flutter test
 All tests passed!
 ```
 
+## In progress
+
+- Initial PostgreSQL schema drafted at `backend/schema.sql`.
+- Schema covers profiles, roles, services, areas, workers, orders, offers, extra costs, events, settlements, reviews, complaints, and risk flags.
+- Schema has been reviewed structurally but has not yet been executed against Supabase.
+
 ## Not yet implemented
 
-- Backend and database.
+- Backend and database deployment.
 - Authentication/SMS.
 - Customer/worker role permissions.
 - Real orders, offers, matching, chat, notifications.
