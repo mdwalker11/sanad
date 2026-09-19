@@ -1,17 +1,28 @@
-# sanad
+# Sanad
 
-A new Flutter project.
+سند — منصة الخدمات المنزلية في طرابلس.
 
-## Getting Started
+## الوضع الحالي
 
-This project is a starting point for a Flutter application.
+هذا المستودع يحتوي على بداية تطبيق Flutter الموحد Android/iOS/Web، ووثائق المنتج، ومخطط PostgreSQL أولي.
 
-A few resources to get you started if this is your first Flutter project:
+## التطوير المحلي
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```bash
+flutter pub get
+flutter analyze
+flutter test
+flutter build web --release
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## المسارات المهمة
+
+- `lib/` تطبيق Flutter.
+- `test/` الاختبارات.
+- `backend/schema.sql` مخطط قاعدة البيانات الأولي.
+- `docs/` وثائق المنتج والتشغيل.
+- `.github/workflows/ci.yml` فحص آلي عند كل Push وPull Request.
+
+## ملاحظات الأمان
+
+لا تضع كلمات المرور أو مفاتيح الإدارة أو ملفات التوقيع داخل المستودع. استخدم GitHub Actions Secrets وبيئات النشر الآمنة.
