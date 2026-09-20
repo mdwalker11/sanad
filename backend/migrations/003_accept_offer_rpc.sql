@@ -7,7 +7,7 @@ create or replace function public.accept_service_offer(
 )
 returns public.service_orders
 language plpgsql
-security invoker
+security definer
 set search_path = public
 as $$
 declare
