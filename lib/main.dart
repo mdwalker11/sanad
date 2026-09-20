@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const SanadApp());
+import 'config/app_config.dart';
+import 'config/supabase_bootstrap.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final config = AppConfig.fromEnvironment();
+  await SupabaseBootstrap.initialize(config);
+  runApp(SanadApp(supabaseConfigured: config.isValid));
+}
 
 class SanadApp extends StatelessWidget {
-  const SanadApp({super.key});
+  const SanadApp({super.key, this.supabaseConfigured = false});
+
+  final bool supabaseConfigured;
 
   @override
   Widget build(BuildContext context) {
