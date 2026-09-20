@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'auth/auth_page.dart';
 import 'config/app_config.dart';
 import 'config/supabase_bootstrap.dart';
 import 'catalog/service_catalog.dart';
@@ -33,7 +33,7 @@ class SanadApp extends StatelessWidget {
         fontFamily: 'Arial',
         scaffoldBackgroundColor: const Color(0xFFF7F6F2),
       ),
-      home: SanadHomePage(supabaseConfigured: supabaseConfigured),
+      home: supabaseConfigured ? const AuthGate() : const SanadHomePage(),
     );
   }
 }
