@@ -65,7 +65,7 @@ class _CustomerOrdersPageState extends State<CustomerOrdersPage> {
               child: ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: orders.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final order = orders[index];
                   return Card(
