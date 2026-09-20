@@ -10,7 +10,7 @@ class ServiceCatalogRepository {
   Future<ServiceCatalog> fetchActive() async {
     final rows = await client
         .from('service_categories')
-        .select('slug, name_ar, description_ar, sort_order')
+        .select('id, slug, name_ar, description_ar, sort_order')
         .eq('is_active', true)
         .order('sort_order');
     return ServiceCatalog.fromRows(

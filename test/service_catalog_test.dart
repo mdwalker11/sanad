@@ -2,15 +2,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sanad/catalog/service_catalog.dart';
 
 void main() {
-  test('service catalog parses Supabase rows in display order', () {
+  test('service catalog preserves database id and display order', () {
     final catalog = ServiceCatalog.fromRows([
       {
+        'id': 'service-2',
         'slug': 'plumbing',
         'name_ar': 'السباكة',
         'description_ar': 'حلول سريعة',
         'sort_order': 3,
       },
       {
+        'id': 'service-1',
         'slug': 'home-cleaning',
         'name_ar': 'تنظيف المنزل',
         'description_ar': null,
@@ -18,10 +20,7 @@ void main() {
       },
     ]);
 
-    expect(catalog.items.map((item) => item.slug), [
-      'home-cleaning',
-      'plumbing',
-    ]);
+    expect(catalog.items.map((item) => item.id), ['service-1', 'service-2']);
     expect(catalog.items.first.description, 'خدمات منزلية موثوقة');
   });
 }

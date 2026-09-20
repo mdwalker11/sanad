@@ -5,6 +5,8 @@ import 'config/app_config.dart';
 import 'config/supabase_bootstrap.dart';
 import 'catalog/service_catalog.dart';
 import 'catalog/service_catalog_repository.dart';
+import 'orders/order_request.dart';
+import 'orders/order_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,37 +61,43 @@ class _SanadHomePageState extends State<SanadHomePage> {
 
   Future<List<ServiceCatalogItem>> _loadServices() async {
     if (!widget.supabaseConfigured) return _fallbackServices;
-    final catalog = await ServiceCatalogRepository(Supabase.instance.client)
-        .fetchActive();
+    final catalog = await ServiceCatalogRepository(
+      Supabase.instance.client,
+    ).fetchActive();
     return catalog.items;
   }
 
   static const _fallbackServices = <ServiceCatalogItem>[
     ServiceCatalogItem(
+      id: 'home-cleaning',
       slug: 'home-cleaning',
       name: 'تنظيف المنزل',
       description: 'عاملات موثوقات',
       sortOrder: 1,
     ),
     ServiceCatalogItem(
+      id: 'ac-cooling',
       slug: 'ac-cooling',
       name: 'التكييف والتبريد',
       description: 'فنيون متاحون',
       sortOrder: 2,
     ),
     ServiceCatalogItem(
+      id: 'plumbing',
       slug: 'plumbing',
       name: 'السباكة',
       description: 'حلول سريعة',
       sortOrder: 3,
     ),
     ServiceCatalogItem(
+      id: 'electrical',
       slug: 'electrical',
       name: 'الكهرباء',
       description: 'محترفون موثقون',
       sortOrder: 4,
     ),
     ServiceCatalogItem(
+      id: 'furniture-assembly',
       slug: 'furniture-assembly',
       name: 'تركيب الأثاث',
       description: 'عروض واضحة',
@@ -98,12 +106,12 @@ class _SanadHomePageState extends State<SanadHomePage> {
   ];
 
   IconData _iconFor(String slug) => switch (slug) {
-        'home-cleaning' => Icons.cleaning_services_outlined,
-        'ac-cooling' => Icons.ac_unit_outlined,
-        'plumbing' => Icons.water_drop_outlined,
-        'electrical' => Icons.bolt_outlined,
-        _ => Icons.weekend_outlined,
-      };
+    'home-cleaning' => Icons.cleaning_services_outlined,
+    'ac-cooling' => Icons.ac_unit_outlined,
+    'plumbing' => Icons.water_drop_outlined,
+    'electrical' => Icons.bolt_outlined,
+    _ => Icons.weekend_outlined,
+  };
 
   void _showBooking(String service) {
     showModalBottomSheet<void>(

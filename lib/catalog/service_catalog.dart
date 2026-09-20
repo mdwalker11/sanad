@@ -1,11 +1,13 @@
 class ServiceCatalogItem {
   const ServiceCatalogItem({
+    required this.id,
     required this.slug,
     required this.name,
     required this.description,
     required this.sortOrder,
   });
 
+  final String id;
   final String slug;
   final String name;
   final String description;
@@ -20,15 +22,16 @@ class ServiceCatalog {
   factory ServiceCatalog.fromRows(List<Map<String, dynamic>> rows) {
     final items = rows.map((row) {
       return ServiceCatalogItem(
+        id: row['id'] as String? ?? row['slug'] as String,
         slug: row['slug'] as String,
         name: row['name_ar'] as String,
-        description: (row['description_ar'] as String?)?.trim().isNotEmpty == true
+        description:
+            (row['description_ar'] as String?)?.trim().isNotEmpty == true
             ? row['description_ar'] as String
             : 'خدمات منزلية موثوقة',
         sortOrder: (row['sort_order'] as num?)?.toInt() ?? 0,
       );
-    }).toList()
-      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    }).toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     return ServiceCatalog(items);
   }
 }
