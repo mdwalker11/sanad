@@ -118,6 +118,10 @@ class _SanadHomePageState extends State<SanadHomePage> {
   };
 
   void _openCreateOrder(ServiceCatalogItem service) {
+    if (!widget.supabaseConfigured) {
+      _showBooking(service.name);
+      return;
+    }
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
     Navigator.push<bool>(
