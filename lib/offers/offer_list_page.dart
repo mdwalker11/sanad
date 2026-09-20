@@ -59,8 +59,9 @@ class _OfferListPageState extends State<OfferListPage> {
               return const Center(child: CircularProgressIndicator());
             }
             final offers = snapshot.data ?? const <Map<String, dynamic>>[];
-            if (offers.isEmpty)
+            if (offers.isEmpty) {
               return const Center(child: Text('لم تصل عروض بعد'));
+            }
             return ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: offers.length,
