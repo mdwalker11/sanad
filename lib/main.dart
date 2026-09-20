@@ -5,6 +5,7 @@ import 'config/app_config.dart';
 import 'config/supabase_bootstrap.dart';
 import 'catalog/service_catalog.dart';
 import 'catalog/service_catalog_repository.dart';
+import 'orders/order_repository.dart';
 import 'orders/create_order_page.dart';
 
 Future<void> main() async {

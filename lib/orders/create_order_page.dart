@@ -80,7 +80,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             DropdownButtonFormField<BookingType>(
-              value: _bookingType,
+              initialValue: _bookingType,
               decoration: const InputDecoration(border: OutlineInputBorder()),
               items: const [
                 DropdownMenuItem(
