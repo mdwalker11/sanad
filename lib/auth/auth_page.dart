@@ -5,7 +5,9 @@ import 'auth_form.dart';
 import 'auth_repository.dart';
 
 class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
+  const AuthGate({super.key, required this.homeBuilder});
+
+  final WidgetBuilder homeBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +17,7 @@ class AuthGate extends StatelessWidget {
         final session =
             snapshot.data?.session ??
             Supabase.instance.client.auth.currentSession;
-        if (session != null) return const AuthenticatedPlaceholder();
+        if (session != null) return homeBuilder(context);
         return const SignInPage();
       },
     );

@@ -5,6 +5,7 @@ import 'config/app_config.dart';
 import 'config/supabase_bootstrap.dart';
 import 'catalog/service_catalog.dart';
 import 'catalog/service_catalog_repository.dart';
+import 'orders/create_order_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +34,11 @@ class SanadApp extends StatelessWidget {
         fontFamily: 'Arial',
         scaffoldBackgroundColor: const Color(0xFFF7F6F2),
       ),
-      home: supabaseConfigured ? const AuthGate() : const SanadHomePage(),
+      home: supabaseConfigured
+          ? AuthGate(
+              homeBuilder: (_) => const SanadHomePage(supabaseConfigured: true),
+            )
+          : const SanadHomePage(),
     );
   }
 }
@@ -110,6 +115,22 @@ class _SanadHomePageState extends State<SanadHomePage> {
     'electrical' => Icons.bolt_outlined,
     _ => Icons.weekend_outlined,
   };
+
+  void _openCreateOrder(ServiceCatalogItem service) {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CreateOrderPage(
+          serviceId: service.id,
+          serviceName: service.name,
+          customerId: userId,
+          repository: OrderRepository(Supabase.instance.client),
+        ),
+      ),
+    );
+  }
 
   void _showBooking(String service) {
     showModalBottomSheet<void>(
@@ -277,7 +298,7 @@ class _SanadHomePageState extends State<SanadHomePage> {
                             child: Card(
                               elevation: 0,
                               child: ListTile(
-                                onTap: () => _showBooking(service.name),
+                                onTap: () => _openCreateOrder(service),
                                 leading: CircleAvatar(
                                   backgroundColor: const Color(0xFFE2EADF),
                                   child: Icon(
