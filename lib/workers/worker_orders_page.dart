@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../offers/offer.dart';
+import '../offers/offer_repository.dart';
 import '../workers/worker_repository.dart';
 
 class WorkerOrdersPage extends StatefulWidget {
