@@ -46,10 +46,11 @@ class _WorkerProfilePageState extends State<WorkerProfilePage> {
       await widget.repository.saveProfile(profile);
       if (mounted) Navigator.pop(context, true);
     } catch (_) {
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('تعذر حفظ الملف')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تعذر حفظ الملف')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
