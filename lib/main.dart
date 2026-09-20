@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/app_config.dart';
 import 'config/supabase_bootstrap.dart';
+import 'catalog/service_catalog_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,27 +32,77 @@ class SanadApp extends StatelessWidget {
         fontFamily: 'Arial',
         scaffoldBackgroundColor: const Color(0xFFF7F6F2),
       ),
-      home: const SanadHomePage(),
+      home: SanadHomePage(supabaseConfigured: supabaseConfigured),
     );
   }
 }
 
 class SanadHomePage extends StatefulWidget {
-  const SanadHomePage({super.key});
+  const SanadHomePage({super.key, this.supabaseConfigured = false});
+
+  final bool supabaseConfigured;
 
   @override
   State<SanadHomePage> createState() => _SanadHomePageState();
 }
 
 class _SanadHomePageState extends State<SanadHomePage> {
+  late Future<List<ServiceCatalogItem>> _servicesFuture;
   int _tab = 0;
-  final _services = const [
-    ('تنظيف المنزل', 'عاملات موثوقات', Icons.cleaning_services_outlined),
-    ('التكييف والتبريد', 'فنيون متاحون', Icons.ac_unit_outlined),
-    ('السباكة', 'حلول سريعة', Icons.water_drop_outlined),
-    ('الكهرباء', 'محترفون موثقون', Icons.bolt_outlined),
-    ('تركيب الأثاث', 'عروض واضحة', Icons.weekend_outlined),
+
+  @override
+  void initState() {
+    super.initState();
+    _servicesFuture = _loadServices();
+  }
+
+  Future<List<ServiceCatalogItem>> _loadServices() async {
+    if (!widget.supabaseConfigured) return _fallbackServices;
+    final catalog = await ServiceCatalogRepository(Supabase.instance.client)
+        .fetchActive();
+    return catalog.items;
+  }
+
+  static const _fallbackServices = <ServiceCatalogItem>[
+    ServiceCatalogItem(
+      slug: 'home-cleaning',
+      name: 'تنظيف المنزل',
+      description: 'عاملات موثوقات',
+      sortOrder: 1,
+    ),
+    ServiceCatalogItem(
+      slug: 'ac-cooling',
+      name: 'التكييف والتبريد',
+      description: 'فنيون متاحون',
+      sortOrder: 2,
+    ),
+    ServiceCatalogItem(
+      slug: 'plumbing',
+      name: 'السباكة',
+      description: 'حلول سريعة',
+      sortOrder: 3,
+    ),
+    ServiceCatalogItem(
+      slug: 'electrical',
+      name: 'الكهرباء',
+      description: 'محترفون موثقون',
+      sortOrder: 4,
+    ),
+    ServiceCatalogItem(
+      slug: 'furniture-assembly',
+      name: 'تركيب الأثاث',
+      description: 'عروض واضحة',
+      sortOrder: 5,
+    ),
   ];
+
+  IconData _iconFor(String slug) => switch (slug) {
+        'home-cleaning' => Icons.cleaning_services_outlined,
+        'ac-cooling' => Icons.ac_unit_outlined,
+        'plumbing' => Icons.water_drop_outlined,
+        'electrical' => Icons.bolt_outlined,
+        _ => Icons.weekend_outlined,
+      };
 
   void _showBooking(String service) {
     showModalBottomSheet<void>(
@@ -203,26 +255,44 @@ class _SanadHomePageState extends State<SanadHomePage> {
                 ],
               ),
               const SizedBox(height: 10),
-              ..._services.map(
-                (service) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Card(
-                    elevation: 0,
-                    child: ListTile(
-                      onTap: () => _showBooking(service.$1),
-                      leading: CircleAvatar(
-                        backgroundColor: const Color(0xFFE2EADF),
-                        child: Icon(service.$3, color: const Color(0xFF315D47)),
-                      ),
-                      title: Text(
-                        service.$1,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(service.$2),
-                      trailing: const Icon(Icons.chevron_left),
-                    ),
-                  ),
-                ),
+              FutureBuilder<List<ServiceCatalogItem>>(
+                future: _servicesFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final services = snapshot.data ?? _fallbackServices;
+                  return Column(
+                    children: services
+                        .map(
+                          (service) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: Card(
+                              elevation: 0,
+                              child: ListTile(
+                                onTap: () => _showBooking(service.name),
+                                leading: CircleAvatar(
+                                  backgroundColor: const Color(0xFFE2EADF),
+                                  child: Icon(
+                                    _iconFor(service.slug),
+                                    color: const Color(0xFF315D47),
+                                  ),
+                                ),
+                                title: Text(
+                                  service.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text(service.description),
+                                trailing: const Icon(Icons.chevron_left),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  );
+                },
               ),
               const SizedBox(height: 12),
               Card(
