@@ -5,6 +5,7 @@ import 'package:sanad/main.dart';
 void main() {
   testWidgets('Sanad home shows core service categories', (tester) async {
     await tester.pumpWidget(const SanadApp());
+    await tester.pumpAndSettle();
 
     expect(find.text('سند'), findsOneWidget);
     expect(find.text('تنظيف المنزل'), findsOneWidget);
@@ -30,6 +31,7 @@ void main() {
 
   testWidgets('customer can open a service request', (tester) async {
     await tester.pumpWidget(const SanadApp());
+    await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('السباكة'),
       300,
