@@ -37,7 +37,12 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(find.text('السباكة'));
+    final plumbing = find.text('السباكة');
+    await tester.ensureVisible(plumbing);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.ancestor(of: plumbing, matching: find.byType(ListTile)),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('طلب السباكة'), findsOneWidget);
