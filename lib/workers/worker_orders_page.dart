@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../offers/offer.dart';
-import '../offers/offer_repository.dart';
+import '../workers/worker_repository.dart';
 
 class WorkerOrdersPage extends StatefulWidget {
   const WorkerOrdersPage({
@@ -45,16 +45,18 @@ class _WorkerOrdersPageState extends State<WorkerOrdersPage> {
     if (result == null) return;
     try {
       await WorkerOfferRepository(Supabase.instance.client).submitOffer(result);
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('تم إرسال العرض')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم إرسال العرض')),
+        );
+      }
       await _refresh();
     } catch (_) {
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('تعذر إرسال العرض')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تعذر إرسال العرض')),
+        );
+      }
     }
   }
 
@@ -67,12 +69,14 @@ class _WorkerOrdersPageState extends State<WorkerOrdersPage> {
         body: FutureBuilder<List<Map<String, dynamic>>>(
           future: _orders,
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting)
+            if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
-            if (snapshot.hasError)
+            }
+            if (snapshot.hasError) {
               return const Center(child: Text('تعذر تحميل الطلبات'));
+            }
             final orders = snapshot.data ?? const <Map<String, dynamic>>[];
-            if (orders.isEmpty)
+            if (orders.isEmpty) {
               return RefreshIndicator(
                 onRefresh: _refresh,
                 child: ListView(
@@ -82,6 +86,7 @@ class _WorkerOrdersPageState extends State<WorkerOrdersPage> {
                   ],
                 ),
               );
+            }
             return RefreshIndicator(
               onRefresh: _refresh,
               child: ListView.separated(
