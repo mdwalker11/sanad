@@ -7,6 +7,7 @@ import 'catalog/service_catalog.dart';
 import 'catalog/service_catalog_repository.dart';
 import 'orders/order_repository.dart';
 import 'orders/create_order_page.dart';
+import 'orders/customer_orders_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -367,7 +368,16 @@ class _SanadHomePageState extends State<SanadHomePage> {
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _tab,
-          onDestinationSelected: (index) => setState(() => _tab = index),
+          onDestinationSelected: (index) {
+            if (index == 1 && widget.supabaseConfigured) {
+              Navigator.push<void>(
+                context,
+                MaterialPageRoute(builder: (_) => pageForCurrentCustomer()),
+              );
+              return;
+            }
+            setState(() => _tab = index);
+          },
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.home_outlined),
