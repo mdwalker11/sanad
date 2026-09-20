@@ -10,6 +10,12 @@ class WorkerRepository {
   Future<void> saveProfile(WorkerProfileDraft profile) async {
     await client.from('worker_profiles').upsert(profile.toInsertMap());
   }
+}
+
+class WorkerOrdersRepository {
+  const WorkerOrdersRepository(this.client);
+
+  final SupabaseClient client;
 
   Future<List<Map<String, dynamic>>> availableOrders(String workerId) async {
     final rows = await client

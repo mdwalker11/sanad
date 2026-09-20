@@ -47,9 +47,9 @@ class _WorkerProfilePageState extends State<WorkerProfilePage> {
       if (mounted) Navigator.pop(context, true);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تعذر حفظ الملف')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تعذر حفظ الملف')));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
