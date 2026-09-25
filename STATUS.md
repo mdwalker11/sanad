@@ -1,61 +1,94 @@
 # Sanad — Development Status
 
-## Current environment
+آخر تحديث: بعد commit `8c2e2ce`
 
-- Flutter 3.47.4 / Dart 3.13.3 installed at `/data/tools/flutter`.
-- Host: Debian Linux.
-- Android SDK, Java, ADB: not installed.
-- macOS/Xcode: unavailable on this host.
-- Therefore Android/iOS release builds cannot yet be produced here.
+## البيئة الفعلية (مقاسة، لا مفترضة)
 
-## Implemented
+| المكوّن | الحالة |
+|---|---|
+| Flutter | 3.35.5 stable / Dart 3.9.2 — `/data/flutter` |
+| Android SDK | 34 + build-tools 34.0.0 — `/data/android` |
+| JDK | 17 |
+| Gradle | 8.7 (استخدم `--no-daemon` دائماً) |
+| Supabase | مشروع `vpryzkqoxygrqxrluvpj` — PostgreSQL 17.6، eu-west-1 |
+| الذاكرة | 4 GB cgroup — daemon متروك يلتهم ثلثها |
+| iOS | غير متاح (لا macOS/Xcode على هذا المضيف) |
 
-- Flutter project created for Android/iOS/Web.
-- App identity: `ly.sanad.sanad`.
-- Arabic RTL starter home screen.
-- Customer-facing service cards.
-- Initial booking bottom sheet.
-- Initial unified-app direction; worker role/backend still to be implemented.
-- Initial tests for home services and opening a booking request.
-
-## Verification
-
-Commands executed successfully:
+## التحقق الحالي
 
 ```text
-flutter analyze
-No issues found!
+$ flutter analyze
+No issues found! (ran in 2.3s)
 
-flutter test
-All tests passed!
+$ flutter test
+00:37 +83: All tests passed!
 ```
 
-## In progress
+## قاعدة البيانات — مطبَّقة ومتحقَّق منها
 
-- Initial PostgreSQL schema drafted at `backend/schema.sql`.
-- Schema covers profiles, roles, services, areas, workers, orders, offers, extra costs, events, settlements, reviews, complaints, and risk flags.
-- Schema has been reviewed structurally but has not yet been executed against Supabase.
+| العنصر | العدد |
+|---|---|
+| الجداول | 19/19 |
+| الدوال | 14/14 |
+| Triggers | 14 |
+| RLS | مفعّل على 19/19 جدول، 35 سياسة |
 
-## Not yet implemented
+تفاصيل الفجوتين المكتشفتين والمصلحتين في `backend/MIGRATIONS_APPLIED.md`:
+- `handle_new_user()` كانت تتجاهل `requested_role` → كل مستخدم يظهر كعميل
+- `accept_service_offer()` كانت مفقودة تماماً → قبول العروض معطّل
 
-- Backend and database deployment.
-- Authentication/SMS.
-- Customer/worker role permissions.
-- Real orders, offers, matching, chat, notifications.
-- Cash settlement ledger and commission rules.
-- Worker verification.
-- Complaints and warranty.
-- Production admin dashboard.
-- Android SDK/release build.
-- macOS/Xcode/iOS release build.
-- Store signing and publishing.
+## المنجز
 
-## Next engineering slice
+### العميل
+- كتالوج الخدمات الخمس من Supabase
+- إنشاء طلب (فوري/مجدول) مع تحقق من المدخلات
+- متابعة الطلبات وحالاتها بالعربية
+- بطاقة الثقة تشرح معايير اختيار المحترفين (`_TrustSheet`)
 
-Build the domain/backend contract and a local in-memory vertical slice for:
+### العامل
+- استعراض الطلبات وتقديم العروض
+- ملف العامل المهني
+- **سجل الأعمال والأرباح** — محصَّل/مستحق/عمولة/متوسط، بأربع حالات كاملة
+- **دعم سند** — قنوات تواصل + أسئلة متكررة، يعمل دون اتصال
 
-```text
-create request → submit offer → accept offer → complete service → review
-```
+### الإشعارات
+- عدّاد غير المقروء في العنوان، وتمييز بصري للجديد
+- "تعليم الكل كمقروء" دفعة واحدة
+- توقيت عربي نسبي صحيح المثنى والجمع ("قبل ساعتين"، "قبل 5 دقائق")
 
-Then replace the in-memory repository with a secured backend.
+### الحساب
+- تسجيل دخول/إنشاء حساب مع إسناد الدور الصحيح
+- إدارة الحساب بعناصر تفاعلية مختبَرة بالضغط
+
+## معمارية الاختبار
+
+الشاشات الجديدة تعتمد على واجهات مجردة لا على `SupabaseClient`:
+
+- `WorkerEarningsSource` ← `worker_earnings_page.dart`
+- `WorkerProfileSink` ← `worker_profile_page.dart`
+
+هذا يسمح باختبار حالات التحميل والفشل والفراغ دون شبكة.
+
+## مزالق موثّقة
+
+1. **سطح الاختبار الافتراضي 800×600** — عناصر `ListView` تحت الطية غائبة عن
+   الشجرة تماماً. كبّر `tester.view.physicalSize` قبل `pumpWidget`.
+2. **`super.key` يستقر على الـ widget الخارجي** لا على `ListTile` الذي يبنيه.
+3. **اختبار الظهور لا يكشف زراً ميتاً** — `onTap: () {}` يمر من كل اختبار
+   يسأل `findsOneWidget`. لا بد من `tester.tap()` وفحص `onTap != null`.
+4. **migration مكتوب ≠ migration مطبَّق** — تحقّق من `pg_proc`/`pg_tables`.
+
+## غير محقَّق منه بصراحة
+
+- **لا اختبار على جهاز Android حقيقي** — لا محاكي ولا هاتف متصل. التحقق
+  اقتصر على `flutter test` و`flutter build`.
+- **لا اختبار end-to-end للتسجيل من الواجهة** — إصلاح الدور تُحقق منه
+  بإدراج مباشر في `auth.users`، وهو يثبت الـ trigger لا رحلة الواجهة.
+- APK متصل بالإنتاج يحتاج `SUPABASE_URL` و`SUPABASE_PUBLISHABLE_KEY`
+  وقت البناء عبر `--dart-define`.
+
+## الأولويات التالية
+
+1. تغطية `auth_page.dart` باختبارات ضغط — 13 عنصر تفاعل بلا `Key`
+3. إكمال اختيار التاريخ/العنوان/الصور في إنشاء الطلب
+4. بناء APK متصل والتحقق منه على جهاز حقيقي

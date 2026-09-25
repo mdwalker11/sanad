@@ -350,7 +350,7 @@ class _SanadHomePageState extends State<SanadHomePage> {
     if (userId == null) return;
     Navigator.push<void>(
       context,
-      MaterialPageRoute(builder: (_) => NotificationsPage(userId: userId)),
+      MaterialPageRoute(builder: (_) => NotificationsPage.forUser(userId)),
     );
   }
 
