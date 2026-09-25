@@ -15,7 +15,7 @@ class CreateOrderPage extends StatefulWidget {
   final String serviceId;
   final String serviceName;
   final String customerId;
-  final OrderRepository repository;
+  final OrderSink repository;
 
   @override
   State<CreateOrderPage> createState() => _CreateOrderPageState();
@@ -41,7 +41,27 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
   }
 
   Future<void> _submit() async {
+    // الحارس الأول: يمنع الضغط المزدوج على شبكة بطيئة من إنشاء طلبين.
+    // لا يكفي `onPressed: _saving ? null : _submit` وحده، لأن إعادة البناء
+    // لا تحدث قبل أن يبدأ الاستدعاء غير المتزامن.
+    if (_saving) return;
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+
     try {
+      // التحقق يسبق أي كتابة: بناء الطلب أولاً يضمن ألا نترك عنواناً
+      // يتيماً في قاعدة البيانات عندما يكون الوصف فارغاً.
+      OrderRequest(
+        customerId: widget.customerId,
+        serviceId: widget.serviceId,
+        description: _description.text,
+        bookingType: _bookingType,
+        preferredStart: _preferredStart,
+        preferredEnd: _preferredEnd,
+      );
+
       final addressText = _address.text.trim();
       String? addressId;
       if (addressText.isNotEmpty) {
@@ -51,6 +71,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
         );
         addressId = address['id'] as String?;
       }
+
       final request = OrderRequest(
         customerId: widget.customerId,
         serviceId: widget.serviceId,
@@ -60,16 +81,12 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
         preferredStart: _preferredStart,
         preferredEnd: _preferredEnd,
       );
-      setState(() {
-        _saving = true;
-        _error = null;
-      });
       await widget.repository.createOrder(request);
       if (mounted) Navigator.pop(context, true);
     } on OrderRequestException catch (error) {
-      setState(() => _error = error.message);
+      if (mounted) setState(() => _error = error.message);
     } catch (_) {
-      setState(() => _error = 'تعذر إنشاء الطلب، حاول مرة أخرى');
+      if (mounted) setState(() => _error = 'تعذر إنشاء الطلب، حاول مرة أخرى');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -225,6 +242,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
             ],
             const SizedBox(height: 24),
             FilledButton(
+              key: const Key('create_order_submit'),
               onPressed: _saving ? null : _submit,
               child: _saving
                   ? const CircularProgressIndicator()

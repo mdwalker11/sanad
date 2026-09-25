@@ -2,11 +2,25 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'order_request.dart';
 
-class OrderRepository {
+/// العقد الذي تعتمد عليه شاشة إنشاء الطلب.
+///
+/// وجوده يسمح باختبار الشاشة — بما فيها حالات الفشل والضغط المزدوج —
+/// دون أي اتصال بـ Supabase.
+abstract class OrderSink {
+  Future<Map<String, dynamic>> createAddress({
+    required String customerId,
+    required String addressText,
+  });
+
+  Future<Map<String, dynamic>> createOrder(OrderRequest request);
+}
+
+class OrderRepository implements OrderSink {
   const OrderRepository(this.client);
 
   final SupabaseClient client;
 
+  @override
   Future<Map<String, dynamic>> createAddress({
     required String customerId,
     required String addressText,
@@ -24,6 +38,7 @@ class OrderRepository {
     return Map<String, dynamic>.from(row);
   }
 
+  @override
   Future<Map<String, dynamic>> createOrder(OrderRequest request) async {
     final row = await client
         .from('service_orders')
