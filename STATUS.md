@@ -18,13 +18,16 @@
 
 ```text
 $ flutter analyze
-No issues found! (ran in 2.6s)
+No issues found! (ran in 1.6s)
 
 $ flutter test
-00:41 +102: All tests passed!
+00:22 +109: All tests passed!
 
 $ flutter build apk --debug
 ✓ Built build/app/outputs/flutter-apk/app-debug.apk
+
+$ flutter build apk --release --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_PUBLISHABLE_KEY=...
+✓ Built build/app/outputs/flutter-apk/app-release.apk (52.3MB)
 
 $ aapt dump badging app-debug.apk
 package: name='ly.sanad.sanad' versionCode='1' versionName='0.1.0'
