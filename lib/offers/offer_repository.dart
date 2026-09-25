@@ -34,20 +34,11 @@ class WorkerOfferRepository {
     required String orderId,
     required String offerId,
   }) async {
-    await client
-        .from('service_orders')
-        .update({'selected_offer_id': offerId, 'status': 'confirmed'})
-        .eq('id', orderId);
-    await client
-        .from('service_offers')
-        .update({'status': 'accepted'})
-        .eq('id', offerId)
-        .eq('order_id', orderId);
-    await client
-        .from('service_offers')
-        .update({'status': 'rejected'})
-        .eq('order_id', orderId)
-        .neq('id', offerId)
-        .eq('status', 'pending');
+    // Acceptance must be atomic and server-authorized. The RPC also verifies
+    // ownership, offer state, order state, and records the order event.
+    await client.rpc(
+      'accept_service_offer',
+      params: {'p_order_id': orderId, 'p_offer_id': offerId},
+    );
   }
 }

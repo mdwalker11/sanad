@@ -10,6 +10,7 @@ class CustomerOrder {
     required this.status,
     required this.createdAt,
     this.serviceName,
+    this.selectedWorkerId,
   });
 
   final String id;
@@ -18,6 +19,7 @@ class CustomerOrder {
   final OrderStatusLabel status;
   final DateTime createdAt;
   final String? serviceName;
+  final String? selectedWorkerId;
 
   factory CustomerOrder.fromRow(Map<String, dynamic> row) {
     final service = row['service_categories'];
@@ -33,6 +35,7 @@ class CustomerOrder {
           DateTime.tryParse(row['created_at'] as String? ?? '') ??
           DateTime.now(),
       serviceName: serviceMap?['name_ar'] as String?,
+      selectedWorkerId: row['selected_worker_id'] as String?,
     );
   }
 }
@@ -47,7 +50,7 @@ class CustomerOrderRepository {
         .from('service_orders')
         .select(
           'id, order_number, description, booking_type, status, created_at, '
-          'service_categories(name_ar)',
+          'selected_worker_id, service_categories(name_ar)',
         )
         .eq('customer_id', customerId)
         .order('created_at', ascending: false);

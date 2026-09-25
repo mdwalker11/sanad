@@ -46,6 +46,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('طلب السباكة'), findsOneWidget);
-    expect(find.text('متابعة وإنشاء الطلب'), findsOneWidget);
+    expect(find.text('متابعة'), findsOneWidget);
   });
 }

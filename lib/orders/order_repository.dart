@@ -7,6 +7,23 @@ class OrderRepository {
 
   final SupabaseClient client;
 
+  Future<Map<String, dynamic>> createAddress({
+    required String customerId,
+    required String addressText,
+  }) async {
+    final row = await client
+        .from('customer_addresses')
+        .insert({
+          'customer_id': customerId,
+          'label': 'عنوان الطلب',
+          'address_text': addressText.trim(),
+          'is_default': false,
+        })
+        .select('id, address_text')
+        .single();
+    return Map<String, dynamic>.from(row);
+  }
+
   Future<Map<String, dynamic>> createOrder(OrderRequest request) async {
     final row = await client
         .from('service_orders')

@@ -1,4 +1,15 @@
+import 'package:flutter/material.dart';
+
 enum BookingType { scheduled, timeWindow, immediate }
+
+DateTime combineDateAndTime(DateTime date, TimeOfDay time) =>
+    DateTime(date.year, date.month, date.day, time.hour, time.minute);
+
+void validateTimeWindow(DateTime start, DateTime end) {
+  if (!end.isAfter(start)) {
+    throw const OrderRequestException('نهاية الموعد يجب أن تكون بعد بدايته');
+  }
+}
 
 class OrderRequestException implements Exception {
   const OrderRequestException(this.message);
@@ -28,6 +39,15 @@ class OrderRequest {
         (preferredStart == null || preferredEnd == null)) {
       throw const OrderRequestException('يرجى تحديد الفترة الزمنية');
     }
+    if (bookingType == BookingType.scheduled &&
+        (preferredStart == null || preferredEnd == null)) {
+      throw const OrderRequestException('يرجى تحديد الموعد');
+    }
+    if (preferredStart != null &&
+        preferredEnd != null &&
+        !preferredEnd!.isAfter(preferredStart!)) {
+      throw const OrderRequestException('نهاية الموعد يجب أن تكون بعد بدايته');
+    }
   }
 
   final String customerId;
@@ -45,7 +65,7 @@ class OrderRequest {
       if (addressId != null) 'address_id': addressId,
       'description': description.trim(),
       'booking_type': bookingType.name,
-      'status': 'new',
+      'status': 'awaiting_offers',
       if (preferredStart != null)
         'preferred_start': preferredStart!.toUtc().toIso8601String(),
       if (preferredEnd != null)

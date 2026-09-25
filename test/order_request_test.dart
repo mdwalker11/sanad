@@ -17,7 +17,7 @@ void main() {
       'address_id': 'address-1',
       'description': 'تسريب في المطبخ',
       'booking_type': 'immediate',
-      'status': 'new',
+      'status': 'awaiting_offers',
     });
   });
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'offer_repository.dart';
 
@@ -30,9 +29,9 @@ class _OfferListPageState extends State<OfferListPage> {
   Future<void> _accept(String offerId) async {
     setState(() => _accepting = offerId);
     try {
-      await Supabase.instance.client.rpc(
-        'accept_service_offer',
-        params: {'p_order_id': widget.orderId, 'p_offer_id': offerId},
+      await widget.repository.acceptOffer(
+        orderId: widget.orderId,
+        offerId: offerId,
       );
       if (mounted) Navigator.pop(context, true);
     } catch (_) {

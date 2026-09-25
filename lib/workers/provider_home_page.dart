@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../account/account_page.dart';
+import '../support/support_page.dart';
 
+import 'worker_earnings_page.dart';
 import 'worker_orders_page.dart';
 import 'worker_profile_page.dart';
 import 'worker_repository.dart';
@@ -96,16 +98,31 @@ class ProviderHomePage extends StatelessWidget {
               ),
             ),
             _ProviderAction(
+              key: const Key('provider_earnings_action'),
               icon: Icons.history,
               title: 'سجل الأعمال والأرباح',
-              subtitle: 'سيظهر هنا بعد إتمام أول خدمة.',
-              onTap: () {},
+              subtitle: 'تابع أرباحك المحصَّلة والمستحقة.',
+              onTap: () => Navigator.push<void>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => WorkerEarningsPage(
+                    source: SupabaseWorkerEarningsSource(
+                      client ?? Supabase.instance.client,
+                      workerId,
+                    ),
+                  ),
+                ),
+              ),
             ),
             _ProviderAction(
+              key: const Key('provider_support_action'),
               icon: Icons.support_agent_outlined,
               title: 'دعم سند',
               subtitle: 'تواصل مع فريق التشغيل عند الحاجة.',
-              onTap: () {},
+              onTap: () => Navigator.push<void>(
+                context,
+                MaterialPageRoute(builder: (_) => const SupportPage()),
+              ),
             ),
           ],
         ),
@@ -140,6 +157,7 @@ class _Metric extends StatelessWidget {
 
 class _ProviderAction extends StatelessWidget {
   const _ProviderAction({
+    super.key,
     required this.icon,
     required this.title,
     required this.subtitle,

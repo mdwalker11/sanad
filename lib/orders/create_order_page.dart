@@ -23,23 +23,42 @@ class CreateOrderPage extends StatefulWidget {
 
 class _CreateOrderPageState extends State<CreateOrderPage> {
   final _description = TextEditingController();
+  final _address = TextEditingController();
   BookingType _bookingType = BookingType.immediate;
+  DateTime? _preferredStart;
+  DateTime? _preferredEnd;
+  DateTime? _selectedDate;
+  TimeOfDay? _startTime;
+  TimeOfDay? _endTime;
   bool _saving = false;
   String? _error;
 
   @override
   void dispose() {
     _description.dispose();
+    _address.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     try {
+      final addressText = _address.text.trim();
+      String? addressId;
+      if (addressText.isNotEmpty) {
+        final address = await widget.repository.createAddress(
+          customerId: widget.customerId,
+          addressText: addressText,
+        );
+        addressId = address['id'] as String?;
+      }
       final request = OrderRequest(
         customerId: widget.customerId,
         serviceId: widget.serviceId,
         description: _description.text,
+        addressId: addressId,
         bookingType: _bookingType,
+        preferredStart: _preferredStart,
+        preferredEnd: _preferredEnd,
       );
       setState(() {
         _saving = true;
@@ -75,6 +94,16 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
               ),
             ),
             const SizedBox(height: 18),
+            TextField(
+              controller: _address,
+              maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: 'العنوان أو المنطقة',
+                hintText: 'مثال: طرابلس - حي الأندلس',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 14),
             const Text(
               'نوع الموعد',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -100,6 +129,93 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
                 if (value != null) setState(() => _bookingType = value);
               },
             ),
+            if (_bookingType != BookingType.immediate) ...[
+              const SizedBox(height: 14),
+              OutlinedButton.icon(
+                onPressed: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 90)),
+                    initialDate: _preferredStart ?? DateTime.now(),
+                  );
+                  if (picked == null || !mounted) return;
+                  setState(() {
+                    _selectedDate = picked;
+                    _startTime ??= const TimeOfDay(hour: 9, minute: 0);
+                    _endTime ??= const TimeOfDay(hour: 11, minute: 0);
+                    _preferredStart = combineDateAndTime(picked, _startTime!);
+                    _preferredEnd = combineDateAndTime(picked, _endTime!);
+                  });
+                },
+                icon: const Icon(Icons.calendar_month_outlined),
+                label: Text(
+                  _selectedDate == null
+                      ? 'اختر اليوم والوقت'
+                      : 'اليوم: ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _selectedDate == null
+                          ? null
+                          : () async {
+                              final time = await showTimePicker(
+                                context: context,
+                                initialTime:
+                                    _startTime ??
+                                    const TimeOfDay(hour: 9, minute: 0),
+                              );
+                              if (time == null || !mounted) return;
+                              setState(() {
+                                _startTime = time;
+                                _preferredStart = combineDateAndTime(
+                                  _selectedDate!,
+                                  time,
+                                );
+                              });
+                            },
+                      child: Text(
+                        _startTime == null
+                            ? 'وقت البداية'
+                            : 'من ${_startTime!.format(context)}',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _selectedDate == null
+                          ? null
+                          : () async {
+                              final time = await showTimePicker(
+                                context: context,
+                                initialTime:
+                                    _endTime ??
+                                    const TimeOfDay(hour: 11, minute: 0),
+                              );
+                              if (time == null || !mounted) return;
+                              setState(() {
+                                _endTime = time;
+                                _preferredEnd = combineDateAndTime(
+                                  _selectedDate!,
+                                  time,
+                                );
+                              });
+                            },
+                      child: Text(
+                        _endTime == null
+                            ? 'وقت النهاية'
+                            : 'إلى ${_endTime!.format(context)}',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             if (_error != null) ...[
               const SizedBox(height: 12),
               Text(

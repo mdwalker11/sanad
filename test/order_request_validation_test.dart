@@ -14,4 +14,30 @@ void main() {
       throwsA(isA<OrderRequestException>()),
     );
   });
+
+  test('scheduled request requires both bounds', () {
+    expect(
+      () => OrderRequest(
+        customerId: 'customer-1',
+        serviceId: 'service-1',
+        description: 'تنظيف',
+        bookingType: BookingType.scheduled,
+      ),
+      throwsA(isA<OrderRequestException>()),
+    );
+  });
+
+  test('request rejects an end time before its start', () {
+    expect(
+      () => OrderRequest(
+        customerId: 'customer-1',
+        serviceId: 'service-1',
+        description: 'تنظيف',
+        bookingType: BookingType.scheduled,
+        preferredStart: DateTime(2026, 9, 20, 12),
+        preferredEnd: DateTime(2026, 9, 20, 11),
+      ),
+      throwsA(isA<OrderRequestException>()),
+    );
+  });
 }
