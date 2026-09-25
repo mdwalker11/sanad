@@ -574,7 +574,13 @@ class _SanadHomePageState extends State<SanadHomePage> {
                         ),
                       ),
                       IconButton(
-                        onPressed: () {},
+                        key: const Key('trust_info_button'),
+                        tooltip: 'كيف نختار المحترفين؟',
+                        onPressed: () => showModalBottomSheet<void>(
+                          context: context,
+                          showDragHandle: true,
+                          builder: (_) => const _TrustSheet(),
+                        ),
                         icon: const Icon(Icons.chevron_left),
                       ),
                     ],
@@ -606,6 +612,96 @@ class _SanadHomePageState extends State<SanadHomePage> {
               label: 'حسابي',
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// لوحة تشرح معايير اختيار المحترفين — تبني ثقة العميل بدل سهم لا يفعل شيئاً.
+class _TrustSheet extends StatelessWidget {
+  const _TrustSheet();
+
+  static const _criteria = <(IconData, String, String)>[
+    (
+      Icons.badge_outlined,
+      'تحقق من الهوية',
+      'كل مقدم خدمة يقدّم إثبات هوية رسمياً قبل استقبال أي طلب.',
+    ),
+    (
+      Icons.handyman_outlined,
+      'تقييم المهارة',
+      'نراجع خبرة كل محترف في تخصصه قبل اعتماده على المنصة.',
+    ),
+    (
+      Icons.star_outline,
+      'تقييمات العملاء',
+      'تقييمك بعد كل خدمة يؤثر مباشرة في استمرار المحترف معنا.',
+    ),
+    (
+      Icons.support_agent_outlined,
+      'متابعة التشغيل',
+      'فريق سند يتابع الشكاوى ويتدخل عند أي خلل في الخدمة.',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'كيف نختار المحترفين؟',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ..._criteria.map(
+                (c) => Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(c.$1, color: _brandGreen),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              c.$2,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              c.$3,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: FilledButton(
+                  key: const Key('trust_sheet_close'),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('فهمت'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
