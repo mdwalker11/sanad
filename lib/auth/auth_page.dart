@@ -194,6 +194,7 @@ class AuthenticatedPlaceholder extends StatelessWidget {
 
 class _RoleChoiceCard extends StatelessWidget {
   const _RoleChoiceCard({
+    super.key,
     required this.icon,
     required this.title,
     required this.subtitle,
@@ -493,6 +494,7 @@ class _SignInPageState extends State<SignInPage> {
                 const Text('اختر دورك لنجهّز لك التجربة المناسبة.'),
                 const SizedBox(height: 18),
                 _RoleChoiceCard(
+                  key: const Key('role_choice_customer'),
                   icon: Icons.home_outlined,
                   title: 'أبحث عن خدمة منزلية',
                   subtitle: 'أنا عميل وأريد طلب خدمة لمنزلي.',
@@ -504,6 +506,7 @@ class _SignInPageState extends State<SignInPage> {
                 ),
                 const SizedBox(height: 12),
                 _RoleChoiceCard(
+                  key: const Key('role_choice_worker'),
                   icon: Icons.handyman_outlined,
                   title: 'أقدّم خدمات منزلية',
                   subtitle: 'أنا عامل وأريد استقبال الطلبات وتقديم العروض.',

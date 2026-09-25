@@ -18,10 +18,17 @@
 
 ```text
 $ flutter analyze
-No issues found! (ran in 2.3s)
+No issues found! (ran in 2.6s)
 
 $ flutter test
-00:37 +83: All tests passed!
+00:41 +102: All tests passed!
+
+$ flutter build apk --debug
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+
+$ aapt dump badging app-debug.apk
+package: name='ly.sanad.sanad' versionCode='1' versionName='0.1.0'
+targetSdkVersion:'36'
 ```
 
 ## قاعدة البيانات — مطبَّقة ومتحقَّق منها
@@ -77,6 +84,11 @@ $ flutter test
 3. **اختبار الظهور لا يكشف زراً ميتاً** — `onTap: () {}` يمر من كل اختبار
    يسأل `findsOneWidget`. لا بد من `tester.tap()` وفحص `onTap != null`.
 4. **migration مكتوب ≠ migration مطبَّق** — تحقّق من `pg_proc`/`pg_tables`.
+5. **`kotlin {}` بلا إضافة Kotlin مطبّقة** — كان `android/app/build.gradle.kts`
+   يضبط `jvmTarget` دون `id("org.jetbrains.kotlin.android")` في `plugins`،
+   فكان البناء يفشل كلياً رغم أن الاختبارات كلها خضراء.
+6. **NDK**: إضافات `app_links`/`shared_preferences_android`/`url_launcher_android`
+   تتطلب `28.2.13676358`؛ ثبّته صراحةً بدل `flutter.ndkVersion`.
 
 ## غير محقَّق منه بصراحة
 
