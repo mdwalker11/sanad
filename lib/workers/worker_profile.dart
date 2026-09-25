@@ -1,3 +1,11 @@
+class WorkerProfileException implements Exception {
+  const WorkerProfileException(this.message);
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 class WorkerProfileDraft {
   WorkerProfileDraft({
     required this.userId,

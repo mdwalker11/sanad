@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../offers/offer.dart';
 import '../offers/offer_repository.dart';
+import '../orders/order_transition_repository.dart';
 import '../workers/worker_repository.dart';
 
 class WorkerOrdersPage extends StatefulWidget {
@@ -35,6 +36,38 @@ class _WorkerOrdersPageState extends State<WorkerOrdersPage> {
     await _orders;
   }
 
+  Future<void> _advanceStatus(Map<String, dynamic> order) async {
+    final current = order['status'] as String? ?? '';
+    final next = OrderTransitionRepository.nextWorkerStatus(current);
+    if (next == null) return;
+    try {
+      await OrderTransitionRepository(
+        Supabase.instance.client,
+      ).workerUpdateStatus(orderId: order['id'] as String, status: next);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('تم تحديث الحالة إلى ${orderStatusLabel(next)}'),
+          ),
+        );
+      }
+      await _refresh();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تعذر تحديث حالة الطلب')));
+      }
+    }
+  }
+
+  String orderStatusLabel(String status) => switch (status) {
+    'on_the_way' => 'العامل في الطريق',
+    'in_progress' => 'الخدمة جارية',
+    'awaiting_completion' => 'بانتظار تأكيد الإنجاز',
+    _ => status,
+  };
+
   Future<void> _offer(Map<String, dynamic> order) async {
     final result = await showDialog<ServiceOfferDraft>(
       context: context,
@@ -47,16 +80,16 @@ class _WorkerOrdersPageState extends State<WorkerOrdersPage> {
     try {
       await WorkerOfferRepository(Supabase.instance.client).submitOffer(result);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم إرسال العرض')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تم إرسال العرض')));
       }
       await _refresh();
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تعذر إرسال العرض')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تعذر إرسال العرض')));
       }
     }
   }
@@ -112,10 +145,25 @@ class _WorkerOrdersPageState extends State<WorkerOrdersPage> {
                           const SizedBox(height: 8),
                           Text(order['description'] as String? ?? ''),
                           const SizedBox(height: 12),
-                          FilledButton(
-                            onPressed: () => _offer(order),
-                            child: const Text('إرسال عرض سعر'),
-                          ),
+                          if (OrderTransitionRepository.nextWorkerStatus(
+                                order['status'] as String? ?? '',
+                              ) !=
+                              null)
+                            FilledButton.tonalIcon(
+                              onPressed: () => _advanceStatus(order),
+                              icon: const Icon(Icons.arrow_forward_rounded),
+                              label: Text(
+                                OrderTransitionRepository.actionLabel(
+                                  order['status'] as String? ?? '',
+                                ),
+                              ),
+                            ),
+                          if ((order['status'] as String? ?? '') ==
+                              'awaiting_offers')
+                            FilledButton(
+                              onPressed: () => _offer(order),
+                              child: const Text('إرسال عرض سعر'),
+                            ),
                         ],
                       ),
                     ),

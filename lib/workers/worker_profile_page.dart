@@ -10,7 +10,7 @@ class WorkerProfilePage extends StatefulWidget {
     required this.userId,
   });
 
-  final WorkerRepository repository;
+  final WorkerProfileSink repository;
   final String userId;
 
   @override
@@ -24,6 +24,7 @@ class _WorkerProfilePageState extends State<WorkerProfilePage> {
   bool _tools = false;
   bool _transport = false;
   bool _saving = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -33,23 +34,36 @@ class _WorkerProfilePageState extends State<WorkerProfilePage> {
   }
 
   Future<void> _save() async {
-    final profile = WorkerProfileDraft(
-      userId: widget.userId,
-      bio: _bio.text,
-      yearsExperience: int.tryParse(_years.text) ?? -1,
-      gender: _gender,
-      hasTools: _tools,
-      hasTransport: _transport,
-    );
-    setState(() => _saving = true);
+    WorkerProfileDraft profile;
+    try {
+      profile = WorkerProfileDraft(
+        userId: widget.userId,
+        bio: _bio.text,
+        yearsExperience: int.tryParse(_years.text) ?? -1,
+        gender: _gender,
+        hasTools: _tools,
+        hasTransport: _transport,
+      );
+    } on ArgumentError catch (error) {
+      setState(() => _error = error.message?.toString());
+      return;
+    }
+
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
     try {
       await widget.repository.saveProfile(profile);
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم حفظ الملف وإرساله للمراجعة')),
+        );
+        Navigator.pop(context, true);
+      }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('تعذر حفظ الملف')));
+        setState(() => _error = 'تعذر حفظ الملف، تحقق من الاتصال والصلاحيات');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -65,11 +79,17 @@ class _WorkerProfilePageState extends State<WorkerProfilePage> {
         body: ListView(
           padding: const EdgeInsets.all(20),
           children: [
+            const Text(
+              'أكمل بياناتك ليتمكن فريق سند من مراجعة ملفك.',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _bio,
               maxLines: 4,
               decoration: const InputDecoration(
-                labelText: 'نبذة وخبرتك',
+                labelText: 'نبذة وخبرتك *',
+                hintText: 'اذكر الخدمات والخبرة التي تقدمها',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -78,7 +98,7 @@ class _WorkerProfilePageState extends State<WorkerProfilePage> {
               controller: _years,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                labelText: 'سنوات الخبرة',
+                labelText: 'سنوات الخبرة *',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -107,11 +127,22 @@ class _WorkerProfilePageState extends State<WorkerProfilePage> {
               value: _transport,
               onChanged: (value) => setState(() => _transport = value),
             ),
+            if (_error != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
             const SizedBox(height: 12),
             FilledButton(
               onPressed: _saving ? null : _save,
               child: _saving
-                  ? const CircularProgressIndicator()
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(),
+                    )
                   : const Text('حفظ الملف وإرساله للمراجعة'),
             ),
           ],
