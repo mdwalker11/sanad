@@ -191,6 +191,7 @@ class _OfferDialogState extends State<OfferDialog> {
   final _total = TextEditingController();
   final _arrival = TextEditingController(text: '60');
   final _includes = TextEditingController();
+  bool _submitting = false;
 
   @override
   void dispose() {
@@ -201,20 +202,48 @@ class _OfferDialogState extends State<OfferDialog> {
   }
 
   void _submit() {
+    // حارس الضغط المزدوج: زر بلا حماية يرسل عرضين للطلب نفسه.
+    if (_submitting) return;
+
+    final rawTotal = _total.text.trim();
+    if (rawTotal.isEmpty) {
+      _showError('يرجى إدخال قيمة العرض');
+      return;
+    }
+    // `double.parse` يرمي FormatException برسالة إنجليزية تظهر للعامل.
+    // `tryParse` يعيد null فنترجمها إلى رسالة عربية مفهومة.
+    final total = double.tryParse(rawTotal);
+    if (total == null) {
+      _showError('يرجى إدخال رقم صحيح للإجمالي');
+      return;
+    }
+    if (total < 0) {
+      _showError('لا يمكن أن تكون مبالغ العرض سالبة');
+      return;
+    }
+
     try {
+      _submitting = true;
       final offer = ServiceOfferDraft(
         orderId: widget.orderId,
         workerId: widget.workerId,
-        totalAmount: double.parse(_total.text),
-        estimatedArrivalMinutes: int.tryParse(_arrival.text),
+        totalAmount: total,
+        estimatedArrivalMinutes: int.tryParse(_arrival.text.trim()),
         includes: _includes.text.trim().isEmpty ? null : _includes.text.trim(),
       );
       Navigator.pop(context, offer);
-    } catch (error) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.toString())));
+    } on OfferException catch (error) {
+      // الرسالة عربية جاهزة داخل الاستثناء — لا تُعرض عبر toString()
+      // لأنها تُلحق البادئة الإنجليزية "OfferException:".
+      _submitting = false;
+      _showError(error.message);
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -224,16 +253,19 @@ class _OfferDialogState extends State<OfferDialog> {
       mainAxisSize: MainAxisSize.min,
       children: [
         TextField(
+          key: const Key('offer_total'),
           controller: _total,
           keyboardType: TextInputType.number,
           decoration: const InputDecoration(labelText: 'الإجمالي بالدينار'),
         ),
         TextField(
+          key: const Key('offer_arrival'),
           controller: _arrival,
           keyboardType: TextInputType.number,
           decoration: const InputDecoration(labelText: 'الوصول بالدقائق'),
         ),
         TextField(
+          key: const Key('offer_includes'),
           controller: _includes,
           decoration: const InputDecoration(labelText: 'ما يشمله العرض'),
         ),
@@ -244,7 +276,11 @@ class _OfferDialogState extends State<OfferDialog> {
         onPressed: () => Navigator.pop(context),
         child: const Text('إلغاء'),
       ),
-      FilledButton(onPressed: _submit, child: const Text('إرسال')),
+      FilledButton(
+        key: const Key('offer_submit'),
+        onPressed: _submit,
+        child: const Text('إرسال'),
+      ),
     ],
   );
 }

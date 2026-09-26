@@ -34,6 +34,15 @@ class ServiceOfferDraft {
     if (totalAmount == 0) {
       throw const OfferException('يرجى إدخال قيمة العرض');
     }
+    // قاعدة البيانات ترفض عرضاً تفاصيله تخالف إجماليه (قيد
+    // service_offers_amounts_consistent في migration 015). نمنع ذلك هنا
+    // ليرى العامل رسالة عربية مفهومة بدل خطأ خادم غامض.
+    final breakdown = visitAmount + laborAmount + materialsAmount;
+    if (breakdown > 0 && (totalAmount - breakdown).abs() >= 0.01) {
+      throw const OfferException(
+        'مجموع التفاصيل (الزيارة والعمل والمواد) يجب أن يساوي الإجمالي',
+      );
+    }
   }
 
   final String orderId;
@@ -55,7 +64,10 @@ class ServiceOfferDraft {
     'visit_amount': visitAmount,
     'labor_amount': laborAmount,
     'materials_amount': materialsAmount,
-    'commission_rate': 20.0,
+    // ملاحظة: `commission_rate` لا تُرسل عمداً. الخادم يفرضها
+    // (guard_service_offer_insert + trg_enforce_offer_commission).
+    // إرسالها من التطبيق يوهم بأنها قابلة للتفاوض، ويكسر تغييرها
+    // مركزياً من جدول platform_settings.
     if (estimatedArrivalMinutes != null)
       'estimated_arrival_minutes': estimatedArrivalMinutes,
     if (estimatedDurationMinutes != null)

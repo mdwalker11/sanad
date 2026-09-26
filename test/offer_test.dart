@@ -22,7 +22,8 @@ void main() {
       'visit_amount': 50.0,
       'labor_amount': 150.0,
       'materials_amount': 50.0,
-      'commission_rate': 20.0,
+      // `commission_rate` غائبة عمداً: الخادم يفرضها
+      // (guard_service_offer_insert + trg_enforce_offer_commission).
       'estimated_arrival_minutes': 30,
       'estimated_duration_minutes': 90,
       'includes': 'فحص وإصلاح',
